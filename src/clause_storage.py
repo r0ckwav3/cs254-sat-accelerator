@@ -6,21 +6,21 @@ import pyrtl
 #  * vars_o: array of wires carrying variable ids
 #  * negs_o: array of bits indicating negation
 class ClauseStorage:
-    def __init__(self, addr_width: int, var_bits:int, clause_size: int):
-        self.addr_width = addr_width
+    def __init__(self, clause_bits: int, var_bits:int, clause_size: int):
+        self.addr_width = clause_bits
         self.var_bits = var_bits
         self.clause_size = clause_size
 
         store_width = (var_bits + 1) * clause_size
         self.mem = pyrtl.MemBlock(
             bitwidth = store_width,
-            addrwidth = addr_width,
+            addrwidth = clause_bits,
             name = "Clause Storage",
             max_read_ports = 1,
             max_write_ports = 1
         )
 
-        self.addr_i = pyrtl.WireVector(bitwidth = addr_width, name="cs_addr_i")
+        self.addr_i = pyrtl.WireVector(bitwidth = clause_bits, name="cs_addr_i")
         self.mem_o = pyrtl.WireVector(bitwidth = store_width, name="cs_mem_o")
         self.mem_o <<= self.mem[self.addr_i]
 
