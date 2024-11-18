@@ -1,4 +1,5 @@
 import pyrtl
+from pyrtl import WireVector
 
 # exposed wires:
 # Inputs:
@@ -17,45 +18,45 @@ import pyrtl
 class ClauseResolver:
     def __init__(self, clause_bits: int, var_bits:int, clause_size: int):
         # IN
-        self.clause_id_i = pyrtl.WireVector(bitwidth = clause_bits, name = "clause_id_i")
+        self.clause_id_i = WireVector(bitwidth = clause_bits, name = "clause_id_i")
         self.cs_vars_i = [
-            pyrtl.WireVector(bitwidth = var_bits, name = f"cs_vars_{i}_i")
+            WireVector(bitwidth = var_bits, name = f"cs_vars_{i}_i")
             for i in range(clause_size)
         ]
         self.cs_negated_i = [
-            pyrtl.WireVector(bitwidth = 1, name = f"cs_negated_{i}_i")
+            WireVector(bitwidth = 1, name = f"cs_negated_{i}_i")
             for i in range(clause_size)
         ]
         self.var_vals_i = [
-            pyrtl.WireVector(bitwidth = 1, name = f"var_vals_{i}_i")
+            WireVector(bitwidth = 1, name = f"var_vals_{i}_i")
             for i in range(clause_size)
         ]
         self.var_assigned_i = [
-            pyrtl.WireVector(bitwidth = 1, name = f"var_assigned_{i}_i")
+            WireVector(bitwidth = 1, name = f"var_assigned_{i}_i")
             for i in range(clause_size)
         ]
 
         # OUT
-        self.cs_addr_o = pyrtl.WireVector(bitwidth = clause_bits, name = "cs_addr_o")
+        self.cs_addr_o = WireVector(bitwidth = clause_bits, name = "cs_addr_o")
         self.va_addrs_o = [
-            pyrtl.WireVector(bitwidth = var_bits, name = f"va_addrs_{i}_o")
+            WireVector(bitwidth = var_bits, name = f"va_addrs_{i}_o")
             for i in range(clause_size)
         ]
-        self.clause_status_o = pyrtl.WireVector(bitwidth = 2, name = "clause_status_o")
-        self.implied_var_o = pyrtl.WireVector(bitwidth = var_bits, name = "implied_var_o")
-        self.implied_val_o = pyrtl.WireVector(bitwidth = 1, name = "implied_val_o")
+        self.clause_status_o = WireVector(bitwidth = 2, name = "clause_status_o")
+        self.implied_var_o = WireVector(bitwidth = var_bits, name = "implied_var_o")
+        self.implied_val_o = WireVector(bitwidth = 1, name = "implied_val_o")
 
         # INTERNAL
         self.term_vals = [
-            pyrtl.WireVector(bitwidth = 1, name = f"term_vals_{i}")
+            WireVector(bitwidth = 1, name = f"term_vals_{i}")
             for i in range(clause_size)
         ]
         self.is_sat_int = [
-            pyrtl.WireVector(bitwidth = 1, name = f"is_sat_int_{i}")
+            WireVector(bitwidth = 1, name = f"is_sat_int_{i}")
             for i in range(clause_size)
         ]
         self.unassigned_count_int = [ # this counts 0->1->3 because that's the least logic to saturate twice
-            pyrtl.WireVector(bitwidth = 2, name = f"unassigned_count_int_{i}")
+            WireVector(bitwidth = 2, name = f"unassigned_count_int_{i}")
             for i in range(clause_size)
         ]
 

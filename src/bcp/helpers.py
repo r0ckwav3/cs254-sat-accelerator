@@ -4,10 +4,10 @@ from typing import Callable
 
 # adds two values to a max of 2 levels
 # 00 -> 01 -> 11
-def double_saturate(in1: pyrtl.WireVector, in2: pyrtl.WireVector):
+def double_saturate(in1: WireVector, in2: WireVector):
     assert in1.bitwidth == 1 or in1.bitwidth == 2
     assert in1.bitwidth == 1 or in1.bitwidth == 2
-    out = pyrtl.WireVector(bitwidth = 2)
+    out = WireVector(bitwidth = 2)
 
     if in1.bitwidth == 1:
         left1 = 0
@@ -27,7 +27,7 @@ def double_saturate(in1: pyrtl.WireVector, in2: pyrtl.WireVector):
 # Assumption:
 #  - all wires in the input are of length k
 #  - op(a,b)->c takes two wires of width k and returns a wire of width k
-def create_bin_tree(self, inputs: list[pyrtl.WireVector], op: Callable[[pyrtl.WireVector, pyrtl.WireVector], pyrtl.WireVector]):
+def create_bin_tree(self, inputs: list[WireVector], op: Callable[[WireVector, WireVector], WireVector]):
     curr_wires = inputs
 
     while len(curr_wires) > 1:
