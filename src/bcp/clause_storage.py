@@ -5,7 +5,7 @@ import pyrtl
 #  * mem_o : raw output of the memory
 #  * vars_o: array of wires carrying variable ids
 #  * negs_o: array of bits indicating negation
-class clause_storage:
+class ClauseStorage:
     def __init__(self, addr_width: int, var_bits:int, clause_size: int):
         self.addr_width = addr_width
         self.var_bits = var_bits
