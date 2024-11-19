@@ -53,7 +53,7 @@ class ClauseResolver:
             for i in range(clause_size)
         ]
         unassigned = [ # negation of var_assigned_i
-            WireVector(bitwidth = 1, name = f"atom_vals_{i}")
+            WireVector(bitwidth = 1, name = f"unassigned_{i}")
             for i in range(clause_size)
         ]
         unassigned_masked_vars = [ # the variable id if it's unassigned and 0 otherwise
@@ -72,6 +72,12 @@ class ClauseResolver:
 
         # LOGIC
 
+        # piping memory addresses around
+        self.cs_addr_o <<= self.clause_id_i
+        for i in range(clause_size):
+            self.va_addrs_o[i] <<= self.cs_vars_i[i]
+
+        # resolve logic
         for i in range(clause_size):
             atom_vals[i] <<= self.var_vals_i[i] ^ self.cs_negated_i[i]
             unassigned[i] <<= ~self.var_assigned_i[i]
