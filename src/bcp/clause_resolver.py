@@ -1,6 +1,6 @@
 import pyrtl
 from pyrtl import WireVector
-from helpers import *
+from .helpers import *
 
 # exposed wires:
 # Inputs:
