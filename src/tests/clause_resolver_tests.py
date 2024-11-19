@@ -9,7 +9,8 @@ import copy
 directory = pathlib.Path(__file__)
 sys.path.append(str(directory.parents[1]))
 
-from bcp import ClauseResolver
+from clause_resolver import ClauseResolver
+import helpers
 
 def basic_setup():
     clause_resolver = ClauseResolver(8, 8, 4)

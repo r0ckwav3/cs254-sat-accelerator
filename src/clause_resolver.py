@@ -1,6 +1,7 @@
 import pyrtl
 from pyrtl import WireVector
-from .helpers import wirevector_list, double_saturate, create_bin_tree
+import helpers
+from helpers import wirevector_list
 
 # exposed wires:
 # Inputs:
@@ -62,11 +63,11 @@ class ClauseResolver:
             unassigned_masked_vars[i] <<= self.cs_vars_i[i] & unassigned[i].sign_extended(var_bits)
             unassigned_masked_negs[i] <<= self.cs_negated_i[i] & unassigned[i]
 
-        is_sat <<= create_bin_tree(atom_vals, lambda a, b: a|b)
-        unassigned_count <<= create_bin_tree(unassigned, double_saturate)
+        is_sat <<= helpers.create_bin_tree(atom_vals, lambda a, b: a|b)
+        unassigned_count <<= helpers.create_bin_tree(unassigned, helpers.double_saturate)
         # we only care about unassigned_var when there's exactly one unassigned variable, so or works fine to extract it
-        unassigned_var <<= create_bin_tree(unassigned_masked_vars, lambda a, b: a|b)
-        unassigned_neg <<= create_bin_tree(unassigned_masked_negs, lambda a, b: a|b)
+        unassigned_var <<= helpers.create_bin_tree(unassigned_masked_vars, lambda a, b: a|b)
+        unassigned_neg <<= helpers.create_bin_tree(unassigned_masked_negs, lambda a, b: a|b)
 
         with pyrtl.conditional_assignment:
             with is_sat:

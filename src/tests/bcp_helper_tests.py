@@ -7,7 +7,7 @@ import random
 directory = pathlib.Path(__file__)
 sys.path.append(str(directory.parents[1]))
 
-from bcp.helpers import *
+import helpers
 
 def double_saturate_one_bit_test():
     pyrtl.reset_working_block()
@@ -17,7 +17,7 @@ def double_saturate_one_bit_test():
     in_1 = pyrtl.Input(bitwidth=1, name="double_saturate_one_bit_test_in_1")
     in_2 = pyrtl.Input(bitwidth=1, name="double_saturate_one_bit_test_in_2")
     out = pyrtl.Output(bitwidth=2, name="double_saturate_one_bit_test_out")
-    out <<= double_saturate(in_1, in_2)
+    out <<= helpers.double_saturate(in_1, in_2)
 
     # test
     sim_trace = pyrtl.SimulationTrace()
@@ -42,7 +42,7 @@ def double_saturate_two_bit_test():
     in_1 = pyrtl.Input(bitwidth=2, name="double_saturate_two_bit_test_in_1")
     in_2 = pyrtl.Input(bitwidth=2, name="double_saturate_two_bit_test_in_2")
     out = pyrtl.Output(bitwidth=2, name="double_saturate_two_bit_test_out")
-    out <<= double_saturate(in_1, in_2)
+    out <<= helpers.double_saturate(in_1, in_2)
 
     # test
     sim_trace = pyrtl.SimulationTrace()
@@ -76,7 +76,7 @@ def create_bin_tree_add_test():
     ]
     out = pyrtl.Output(bitwidth=10, name="create_bin_tree_add_test_out")
     op = lambda a,b: a+b
-    out <<= create_bin_tree(ins, op)
+    out <<= helpers.create_bin_tree(ins, op)
 
     # test
     sim_trace = pyrtl.SimulationTrace()

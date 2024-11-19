@@ -10,7 +10,7 @@ def wirevector_list(bitwidth:int, name:str, length:int, wirevector_class=WireVec
 
 # adds two values to a max of 2 levels
 # 00 -> 01 -> 11
-def double_saturate(in1: WireVector, in2: WireVector):
+def double_saturate(in1: WireVector, in2: WireVector) -> WireVector:
     assert in1.bitwidth == 1 or in1.bitwidth == 2
     assert in1.bitwidth == 1 or in1.bitwidth == 2
 
