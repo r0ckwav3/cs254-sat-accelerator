@@ -1,5 +1,6 @@
 import pyrtl
 from pyrtl import WireVector
+from helpers import *
 
 # exposed wires:
 # Inputs:
@@ -47,48 +48,54 @@ class ClauseResolver:
         self.implied_val_o = WireVector(bitwidth = 1, name = "implied_val_o")
 
         # INTERNAL
-        self.term_vals = [
-            WireVector(bitwidth = 1, name = f"term_vals_{i}")
+        atom_vals = [ # values of variables + if they're negated
+            WireVector(bitwidth = 1, name = f"atom_vals_{i}")
             for i in range(clause_size)
         ]
-        self.is_sat_int = [
-            WireVector(bitwidth = 1, name = f"is_sat_int_{i}")
+        unassigned = [ # negation of var_assigned_i
+            WireVector(bitwidth = 1, name = f"atom_vals_{i}")
             for i in range(clause_size)
         ]
-        self.unassigned_count_int = [ # this counts 0->1->3 because that's the least logic to saturate twice
-            WireVector(bitwidth = 2, name = f"unassigned_count_int_{i}")
+        unassigned_masked_vars = [ # the variable id if it's unassigned and 0 otherwise
+            WireVector(bitwidth = var_bits, name = f"unassigned_masked_vars_{i}")
             for i in range(clause_size)
         ]
+        unassigned_masked_negs = [ # the variable id if it's unassigned and 0 otherwise
+            WireVector(bitwidth = var_bits, name = f"unassigned_masked_negs_{i}")
+            for i in range(clause_size)
+        ]
+
+        is_sat = WireVector(bitwidth = 1, name = "is_sat")
+        unassigned_count = WireVector(bitwidth = 2, name = "unassigned_count") # either 0, 1 or 3, see double_saturate
+        unassigned_var = WireVector(bitwidth = var_bits, name = "unassigned_var")
+        unassigned_neg = WireVector(bitwidth = 1, name = "unassigned_neg")
 
         # LOGIC
 
         for i in range(clause_size):
-            self.term_vals[i] <<= self.var_vals_i[i] ^ self.cs_negated_i[i]
+            atom_vals[i] <<= self.var_vals_i[i] ^ self.cs_negated_i[i]
+            unassigned[i] <<= ~self.var_assigned_i[i]
+            unassigned_masked_vars[i] <<= self.cs_vars_i[i] & unassigned[i]
+            unassigned_masked_negs[i] <<= self.cs_negated_i[i] & unassigned[i]
 
-        # TODO: has_sat logic can be a bin tree (although unassigned_count can't)
-        for i in range(clause_size-1):
-            if i == 0:
-                self.is_sat_int[i] <<= self.term_vals[i] & self.var_assigned_i[i]
-                self.unassigned_count_int[i] <<= pyrtl.concat(0, ~self.var_assigned_i[i])
-            else:
-                self.is_sat_int[i] <<= self.is_sat_int[i-1] | (self.term_vals[i] & self.var_assigned_i[i])
-                unass = ~self.var_assigned_i[i]
-                old_left, old_right = pyrtl.chop(self.unassigned_count_int[i-1],1,1)
-                self.unassigned_count_int[i] <<= pyrtl.concat(old_left | (old_right & unass), old_right | unass)
+        is_sat <<= create_bin_tree(atom_vals, lambda a, b: a|b)
+        unassigned_count <<= create_bin_tree(unassigned, double_saturate)
+        # we only care about unassigned_var when there's exactly one unassigned variable, so or works fine to extract it
+        unassigned_var <<= create_bin_tree(unassigned_masked_vars, lambda a, b: a|b)
+        unassigned_neg <<= create_bin_tree(unassigned_masked_negs, lambda a, b: a|b)
 
         with pyrtl.conditional_assignment:
-            with self.is_sat_int[-1]:
+            with is_sat:
                 # sat
                 self.clause_status_o |= 2
-            with self.unassigned_count_int[-1] == 0:
+            with unassigned_count == 0:
                 # 0 unassigned, therefore unsat
                 self.clause_status_o |= 1
-            with self.unassigned_count_int[-1] == 3:
+            with unassigned_count == 3:
                 # >1 unassigned, therefore unknown
                 self.clause_status_o |= 0
-            with self.unassigned_count_int[-1] == 1:
+            with unassigned_count == 1:
                 # 1 unassigned, therefore propagate/imply
                 self.clause_status_o |= 3
-
-        # TODO: do implication
-        # TODO: add tests (probably in another file)
+                self.implied_var_o |= unassigned_var
+                self.implied_val_o |= ~unassigned_neg
