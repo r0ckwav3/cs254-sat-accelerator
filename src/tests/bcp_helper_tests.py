@@ -103,3 +103,6 @@ if __name__ == "__main__":
     for test in tests:
         print("Running", test.__name__)
         test()
+
+# note this doesn't acutally work down here, you need to put it into a dunction before the asserts that are breaking
+# sim_trace.render_trace()
