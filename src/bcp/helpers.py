@@ -7,7 +7,6 @@ from typing import Callable
 def double_saturate(in1: WireVector, in2: WireVector):
     assert in1.bitwidth == 1 or in1.bitwidth == 2
     assert in1.bitwidth == 1 or in1.bitwidth == 2
-    out = WireVector(bitwidth = 2)
 
     if in1.bitwidth == 1:
         left1 = 0
@@ -21,7 +20,7 @@ def double_saturate(in1: WireVector, in2: WireVector):
     else:
         left2, right2 = pyrtl.chop(in2,1,1)
 
-    pyrtl.concat(left1 | left2 | (right1 & right2), right1 | right2)
+    return pyrtl.concat(left1 | left2 | (right1 & right2), right1 | right2)
 
 # given an array of input wires, create a bin tree using op to combine them
 # Assumption:
