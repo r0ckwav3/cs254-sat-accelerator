@@ -105,6 +105,7 @@ def clause_resolver_sat_unsat_test():
     sim_trace = pyrtl.SimulationTrace()
     sim = pyrtl.Simulation(tracer=sim_trace)
     inputs = copy.deepcopy(DEFAULT_INPUT)
+
     inputs["var_assigned_0"] = 1
     inputs["var_assigned_1"] = 1
     inputs["var_assigned_2"] = 1
@@ -148,11 +149,34 @@ def clause_resolver_sat_unsat_test():
     sim.step(inputs)
     assert sim_trace.trace["clause_status"][-1] == 1
 
+def clause_resolver_unknown_test():
+    pyrtl.reset_working_block()
+    pyrtl.set_debug_mode(True)
 
+    # setup
+    basic_setup()
+
+    # test
+    sim_trace = pyrtl.SimulationTrace()
+    sim = pyrtl.Simulation(tracer=sim_trace)
+    inputs = copy.deepcopy(DEFAULT_INPUT)
+
+    # all unassigned test
+    inputs["var_vals_0"] = 1
+    inputs["cs_negated_1"] = 1
+    inputs["cs_negated_3"] = 1
+    sim.step(inputs)
+    assert sim_trace.trace["clause_status"][-1] == 0
+
+    # two unassigned test
+    inputs["var_assigned_2"] = 1
+    inputs["var_assigned_3"] = 1
+    inputs["var_vals_3"] = 1
+    sim.step(inputs)
+    assert sim_trace.trace["clause_status"][-1] == 0
 
 # TODO: test the functional part of the clause resolver
-#  * sat
-#  * unsat
+
 #  * unknown (2 vars)
 #  * unknown (4 vars)
 #  * implied true
@@ -160,10 +184,14 @@ def clause_resolver_sat_unsat_test():
 
 tests = [
     clause_resolver_addr_test,
-    clause_resolver_sat_unsat_test
+    clause_resolver_sat_unsat_test,
+    clause_resolver_unknown_test
 ]
 
 if __name__ == "__main__":
     for test in tests:
         print("Running", test.__name__)
         test()
+
+# note this doesn't acutally work down here, you need to put it into a dunction before the asserts that are breaking
+# sim_trace.render_trace()
