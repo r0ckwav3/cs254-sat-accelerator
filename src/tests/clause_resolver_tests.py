@@ -9,42 +9,27 @@ import copy
 directory = pathlib.Path(__file__)
 sys.path.append(str(directory.parents[1]))
 
-from bcp import ClauseResolver
+from clause_resolver import ClauseResolver
+import helpers
+from helpers import connect_wire_lists, wirevector_list
 
 def basic_setup():
     clause_resolver = ClauseResolver(8, 8, 4)
     clause_resolver.clause_id_i <<= Input(bitwidth = 8, name = "clause_id")
-    clause_resolver.cs_vars_i[0] <<= Input(bitwidth = 8, name = "cs_vars_0")
-    clause_resolver.cs_vars_i[1] <<= Input(bitwidth = 8, name = "cs_vars_1")
-    clause_resolver.cs_vars_i[2] <<= Input(bitwidth = 8, name = "cs_vars_2")
-    clause_resolver.cs_vars_i[3] <<= Input(bitwidth = 8, name = "cs_vars_3")
-    clause_resolver.cs_negated_i[0] <<= Input(bitwidth = 1, name = "cs_negated_0")
-    clause_resolver.cs_negated_i[1] <<= Input(bitwidth = 1, name = "cs_negated_1")
-    clause_resolver.cs_negated_i[2] <<= Input(bitwidth = 1, name = "cs_negated_2")
-    clause_resolver.cs_negated_i[3] <<= Input(bitwidth = 1, name = "cs_negated_3")
-    clause_resolver.var_vals_i[0] <<= Input(bitwidth = 1, name = "var_vals_0")
-    clause_resolver.var_vals_i[1] <<= Input(bitwidth = 1, name = "var_vals_1")
-    clause_resolver.var_vals_i[2] <<= Input(bitwidth = 1, name = "var_vals_2")
-    clause_resolver.var_vals_i[3] <<= Input(bitwidth = 1, name = "var_vals_3")
-    clause_resolver.var_assigned_i[0] <<= Input(bitwidth = 1, name = "var_assigned_0")
-    clause_resolver.var_assigned_i[1] <<= Input(bitwidth = 1, name = "var_assigned_1")
-    clause_resolver.var_assigned_i[2] <<= Input(bitwidth = 1, name = "var_assigned_2")
-    clause_resolver.var_assigned_i[3] <<= Input(bitwidth = 1, name = "var_assigned_3")
+
+    connect_wire_lists(clause_resolver.cs_vars_i,      wirevector_list(8, "cs_vars", 4, Input))
+    connect_wire_lists(clause_resolver.cs_negated_i,   wirevector_list(1, "cs_negated", 4, Input))
+    connect_wire_lists(clause_resolver.var_vals_i,     wirevector_list(1, "var_vals", 4, Input))
+    connect_wire_lists(clause_resolver.var_assigned_i, wirevector_list(1, "var_assigned", 4, Input))
 
     cs_addr = Output(bitwidth = 8, name = "cs_addr")
-    va_addrs_0 = Output(bitwidth = 8, name = "va_addrs_0")
-    va_addrs_1 = Output(bitwidth = 8, name = "va_addrs_1")
-    va_addrs_2 = Output(bitwidth = 8, name = "va_addrs_2")
-    va_addrs_3 = Output(bitwidth = 8, name = "va_addrs_3")
+    va_addrs = wirevector_list(8, "va_addrs", 4, Output)
     clause_status = Output(bitwidth = 2, name = "clause_status")
     implied_var = Output(bitwidth = 8, name = "implied_var")
     implied_val = Output(bitwidth = 1, name = "implied_val")
 
     cs_addr <<= clause_resolver.cs_addr_o
-    va_addrs_0 <<= clause_resolver.va_addrs_o[0]
-    va_addrs_1 <<= clause_resolver.va_addrs_o[1]
-    va_addrs_2 <<= clause_resolver.va_addrs_o[2]
-    va_addrs_3 <<= clause_resolver.va_addrs_o[3]
+    connect_wire_lists(va_addrs, clause_resolver.va_addrs_o)
     clause_status <<= clause_resolver.clause_status_o
     implied_var <<= clause_resolver.implied_var_o
     implied_val <<= clause_resolver.implied_val_o
