@@ -70,10 +70,8 @@ def create_bin_tree_add_test():
 
     # setup
     in_count = 11
-    ins = [
-        pyrtl.Input(bitwidth=10, name=f"create_bin_tree_add_test_in_{i}")
-        for i in range(in_count)
-    ]
+
+    ins = helpers.wirevector_list(10, "create_bin_tree_add_test_in", in_count, pyrtl.Input)
     out = pyrtl.Output(bitwidth=10, name="create_bin_tree_add_test_out")
     op = lambda a,b: a+b
     out <<= helpers.create_bin_tree(ins, op)

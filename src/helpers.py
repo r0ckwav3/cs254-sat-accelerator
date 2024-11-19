@@ -2,12 +2,27 @@ import pyrtl
 from pyrtl import WireVector
 from typing import Callable, Sequence
 
+## LIST HELPERS ##
 def wirevector_list(bitwidth:int, name:str, length:int, wirevector_class=WireVector):
     return [
         wirevector_class(bitwidth = bitwidth, name = f"{name}_{i}")
         for i in range(length)
     ]
 
+# connect out <<= in
+def connect_wire_lists(out_wires: Sequence[WireVector], in_wires: Sequence[WireVector]):
+    assert len(out_wires) == len(in_wires)
+    for i in range(len(out_wires)):
+        # this is to make my language server happy
+        out_wire = out_wires[i]
+        out_wire <<= in_wires[i]
+
+# returns a list of [in_1, in_2...] -> [f(in_1), f(in_2)...]
+def map_wires(wire_list: Sequence[WireVector], op: Callable[[WireVector], WireVector]):
+    return [op(wire_list[i]) for i in range(len(wire_list))]
+
+
+## BCP HELPERS ##
 # adds two values to a max of 2 levels
 # 00 -> 01 -> 11
 def double_saturate(in1: WireVector, in2: WireVector) -> WireVector:
