@@ -51,10 +51,10 @@ def basic_setup():
 
 DEFAULT_INPUT = {
     "clause_id": 0,
-    "cs_vars_0": 0,
-    "cs_vars_1": 0,
-    "cs_vars_2": 0,
-    "cs_vars_3": 0,
+    "cs_vars_0": 0x10,
+    "cs_vars_1": 0x11,
+    "cs_vars_2": 0x12,
+    "cs_vars_3": 0x13,
     "cs_negated_0": 0,
     "cs_negated_1": 0,
     "cs_negated_2": 0,
@@ -94,6 +94,62 @@ def clause_resolver_addr_test():
     assert sim_trace.trace["va_addrs_2"][-1] == 0xcd
     assert sim_trace.trace["va_addrs_3"][-1] == 0xef
 
+def clause_resolver_sat_unsat_test():
+    pyrtl.reset_working_block()
+    pyrtl.set_debug_mode(True)
+
+    # setup
+    basic_setup()
+
+    # test
+    sim_trace = pyrtl.SimulationTrace()
+    sim = pyrtl.Simulation(tracer=sim_trace)
+    inputs = copy.deepcopy(DEFAULT_INPUT)
+    inputs["var_assigned_0"] = 1
+    inputs["var_assigned_1"] = 1
+    inputs["var_assigned_2"] = 1
+    inputs["var_assigned_3"] = 1
+
+    # non-negated sat
+    inputs["var_vals_0"] = 1
+    sim.step(inputs)
+    assert sim_trace.trace["clause_status"][-1] == 2
+
+    # negated sat
+    inputs["var_vals_0"] = 0
+    inputs["cs_negated_0"] = 1
+    inputs["cs_negated_1"] = 1
+    inputs["cs_negated_2"] = 1
+    inputs["cs_negated_3"] = 1
+    sim.step(inputs)
+    assert sim_trace.trace["clause_status"][-1] == 2
+
+    # negated unsat
+    inputs["var_vals_0"] = 1
+    inputs["var_vals_1"] = 1
+    inputs["var_vals_2"] = 1
+    inputs["var_vals_3"] = 1
+    sim.step(inputs)
+    assert sim_trace.trace["clause_status"][-1] == 1
+
+    # mixed unsat
+    inputs["var_vals_0"] = 0
+    inputs["cs_negated_0"] = 0
+    inputs["var_vals_2"] = 0
+    inputs["cs_negated_2"] = 0
+    sim.step(inputs)
+    assert sim_trace.trace["clause_status"][-1] == 1
+
+    # non-negated unsat
+    inputs["var_vals_1"] = 0
+    inputs["cs_negated_1"] = 0
+    inputs["var_vals_3"] = 0
+    inputs["cs_negated_3"] = 0
+    sim.step(inputs)
+    assert sim_trace.trace["clause_status"][-1] == 1
+
+
+
 # TODO: test the functional part of the clause resolver
 #  * sat
 #  * unsat
@@ -103,7 +159,8 @@ def clause_resolver_addr_test():
 #  * implied false
 
 tests = [
-    clause_resolver_addr_test
+    clause_resolver_addr_test,
+    clause_resolver_sat_unsat_test
 ]
 
 if __name__ == "__main__":
