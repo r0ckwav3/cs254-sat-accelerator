@@ -1,6 +1,7 @@
 import pyrtl
 import pathlib
 import sys
+import random
 
 # slightly sketchy way to allow upward imports
 directory = pathlib.Path(__file__)
@@ -63,12 +64,42 @@ def double_saturate_two_bit_test():
         sim.step({"double_saturate_two_bit_test_in_1": tv[0], "double_saturate_two_bit_test_in_2": tv[1]})
         assert sim_trace.trace["double_saturate_two_bit_test_out"][-1] == tv[2]
 
+def create_bin_tree_add_test():
+    pyrtl.reset_working_block()
+    pyrtl.set_debug_mode(True)
+
+    # setup
+    in_count = 11
+    ins = [
+        pyrtl.Input(bitwidth=10, name=f"create_bin_tree_add_test_in_{i}")
+        for i in range(in_count)
+    ]
+    out = pyrtl.Output(bitwidth=10, name="create_bin_tree_add_test_out")
+    op = lambda a,b: a+b
+    out <<= create_bin_tree(ins, op)
+
+    # test
+    sim_trace = pyrtl.SimulationTrace()
+    sim = pyrtl.Simulation(tracer=sim_trace)
+
+    random.seed(77777)
+    for i in range(100):
+        nums = [random.randint(0,1023) for i in range(in_count)]
+        expected = sum(nums) % 1024
+        in_state = {
+            f"create_bin_tree_add_test_in_{i}": nums[i] for i in range(in_count)
+        }
+
+        sim.step(in_state)
+        assert sim_trace.trace["create_bin_tree_add_test_out"][-1] == expected
 
 tests = [
     double_saturate_one_bit_test,
-    double_saturate_two_bit_test
+    double_saturate_two_bit_test,
+    create_bin_tree_add_test
 ]
 
 if __name__ == "__main__":
     for test in tests:
+        print("Running", test.__name__)
         test()
