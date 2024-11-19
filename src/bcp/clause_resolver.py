@@ -81,7 +81,7 @@ class ClauseResolver:
         for i in range(clause_size):
             atom_vals[i] <<= (self.var_vals_i[i] ^ self.cs_negated_i[i]) & self.var_assigned_i[i]
             unassigned[i] <<= ~self.var_assigned_i[i]
-            unassigned_masked_vars[i] <<= self.cs_vars_i[i] & unassigned[i]
+            unassigned_masked_vars[i] <<= self.cs_vars_i[i] & unassigned[i].sign_extended(var_bits)
             unassigned_masked_negs[i] <<= self.cs_negated_i[i] & unassigned[i]
 
         is_sat <<= create_bin_tree(atom_vals, lambda a, b: a|b)
