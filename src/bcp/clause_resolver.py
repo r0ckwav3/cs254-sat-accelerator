@@ -1,6 +1,6 @@
 import pyrtl
 from pyrtl import WireVector
-from .helpers import *
+from .helpers import wirevector_list, double_saturate, create_bin_tree
 
 # exposed wires:
 # Inputs:
@@ -20,50 +20,28 @@ class ClauseResolver:
     def __init__(self, clause_bits: int, var_bits:int, clause_size: int):
         # IN
         self.clause_id_i = WireVector(bitwidth = clause_bits, name = "clause_id_i")
-        self.cs_vars_i = [
-            WireVector(bitwidth = var_bits, name = f"cs_vars_{i}_i")
-            for i in range(clause_size)
-        ]
-        self.cs_negated_i = [
-            WireVector(bitwidth = 1, name = f"cs_negated_{i}_i")
-            for i in range(clause_size)
-        ]
-        self.var_vals_i = [
-            WireVector(bitwidth = 1, name = f"var_vals_{i}_i")
-            for i in range(clause_size)
-        ]
-        self.var_assigned_i = [
-            WireVector(bitwidth = 1, name = f"var_assigned_{i}_i")
-            for i in range(clause_size)
-        ]
+        self.cs_vars_i =      wirevector_list(var_bits, "cs_vars_i", clause_size)
+        self.cs_negated_i =   wirevector_list(1, "cs_negated_i", clause_size)
+        self.var_vals_i =     wirevector_list(1, "var_vals_i", clause_size)
+        self.var_assigned_i = wirevector_list(1, "var_assigned_i", clause_size)
 
         # OUT
         self.cs_addr_o = WireVector(bitwidth = clause_bits, name = "cs_addr_o")
-        self.va_addrs_o = [
-            WireVector(bitwidth = var_bits, name = f"va_addrs_{i}_o")
-            for i in range(clause_size)
-        ]
+        self.va_addrs_o = wirevector_list(var_bits, "va_addrs_o", clause_size)
+
         self.clause_status_o = WireVector(bitwidth = 2, name = "clause_status_o")
         self.implied_var_o = WireVector(bitwidth = var_bits, name = "implied_var_o")
         self.implied_val_o = WireVector(bitwidth = 1, name = "implied_val_o")
 
         # INTERNAL
-        atom_vals = [ # values of variables + if they're negated
-            WireVector(bitwidth = 1, name = f"atom_vals_{i}")
-            for i in range(clause_size)
-        ]
-        unassigned = [ # negation of var_assigned_i
-            WireVector(bitwidth = 1, name = f"unassigned_{i}")
-            for i in range(clause_size)
-        ]
-        unassigned_masked_vars = [ # the variable id if it's unassigned and 0 otherwise
-            WireVector(bitwidth = var_bits, name = f"unassigned_masked_vars_{i}")
-            for i in range(clause_size)
-        ]
-        unassigned_masked_negs = [ # the variable id if it's unassigned and 0 otherwise
-            WireVector(bitwidth = var_bits, name = f"unassigned_masked_negs_{i}")
-            for i in range(clause_size)
-        ]
+        # values of variables + if they're negated
+        atom_vals = wirevector_list(1, "atom_vals", clause_size)
+        # negation of var_assigned_i
+        unassigned = wirevector_list(1, "unassigned", clause_size)
+         # the variable id if it's unassigned and 0 otherwise
+        unassigned_masked_vars = wirevector_list(var_bits, "unassigned_masked_vars", clause_size)
+        # the negation bit if it's unassigned and 0 otherwise
+        unassigned_masked_negs = wirevector_list(1, "unassigned_masked_negs", clause_size)
 
         is_sat = WireVector(bitwidth = 1, name = "is_sat")
         unassigned_count = WireVector(bitwidth = 2, name = "unassigned_count") # either 0, 1 or 3, see double_saturate

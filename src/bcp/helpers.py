@@ -2,6 +2,12 @@ import pyrtl
 from pyrtl import WireVector
 from typing import Callable, Sequence
 
+def wirevector_list(bitwidth:int, name:str, length:int, wirevector_class=WireVector):
+    return [
+        wirevector_class(bitwidth = bitwidth, name = f"{name}_{i}")
+        for i in range(length)
+    ]
+
 # adds two values to a max of 2 levels
 # 00 -> 01 -> 11
 def double_saturate(in1: WireVector, in2: WireVector):
