@@ -1,5 +1,6 @@
 from pathlib import Path
 from importlib import import_module
+import traceback
 
 # find all test files
 this_path = Path(__file__)
@@ -27,10 +28,12 @@ for suite in test_suites:
             test()
             print("\x1b[1;32msuccess\x1b[m")
             total_sucesses += 1
-        except Exception as e:
+        except Exception:
             print("\x1b[1;31mfailure\x1b[m")
-            print(e)
+            traceback.print_exc()
+            print()
             total_failures += 1
+
 print(f"Tests Run: {total_sucesses + total_failures}")
 print(f"Tests Successes: {total_sucesses}")
 print(f"Tests Failures: {total_failures}")
