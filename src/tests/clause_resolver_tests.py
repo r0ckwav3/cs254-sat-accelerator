@@ -1,8 +1,7 @@
 import pyrtl
-from pyrtl import WireVector, Input, Output
+from pyrtl import Input, Output
 import pathlib
 import sys
-import random
 import copy
 
 # slightly sketchy way to allow upward imports
@@ -10,7 +9,6 @@ directory = pathlib.Path(__file__)
 sys.path.append(str(directory.parents[1]))
 
 from clause_resolver import ClauseResolver
-import helpers
 from helpers import connect_wire_lists, wirevector_list
 
 def basic_setup():

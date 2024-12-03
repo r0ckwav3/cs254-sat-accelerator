@@ -13,7 +13,7 @@ for file in test_dir.iterdir():
         mod = import_module(file.stem)
         try:
             test_suites.append((file.name, mod.tests))
-        except AttributeError as e:
+        except AttributeError:
             print(f"[!] failed to find tests list in {file.name}")
 
 # run test suites
