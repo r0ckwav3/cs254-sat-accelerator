@@ -218,5 +218,5 @@ if __name__ == "__main__":
         print("Running", test.__name__)
         test()
 
-# note this doesn't acutally work down here, you need to put it into a dunction before the asserts that are breaking
+# note this doesn't acutally work down here, you need to put it into a function before the asserts that are breaking
 # sim_trace.render_trace()
