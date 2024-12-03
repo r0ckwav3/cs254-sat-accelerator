@@ -19,19 +19,19 @@ from clause_storage import ClauseStorage
 # - va_write_enable_o: enable bit for writing a variable
 
 class BCP:
-    def __init__(self, clause_bits: int, var_bits:int, clause_size: int):
+    def __init__(self, clause_bits: int, var_bits:int, clause_size: int, name_prefix = "bcp_"):
         ## inputs ##
-        self.start_i =        WireVector(bitwidth = 1, name = "start_i")
-        self.var_vals_i =     wirevector_list(1, "var_vals_i", clause_size)
-        self.var_assigned_i = wirevector_list(1, "var_assigned_i", clause_size)
+        self.start_i =        WireVector(bitwidth = 1, name = name_prefix+"start_i")
+        self.var_vals_i =     wirevector_list(1, name_prefix+"var_vals_i", clause_size)
+        self.var_assigned_i = wirevector_list(1, name_prefix+"var_assigned_i", clause_size)
 
         ## outputs ##
-        self.active_o =          WireVector(bitwidth = 1, name = "active_o")
-        self.status_o =          WireVector(bitwidth = 1, name = "status_o")
-        self.va_addrs_o =        wirevector_list(var_bits, "va_addrs_o", clause_size)
-        self.va_write_addr_o =   WireVector(bitwidth = var_bits, name = "va_write_addr_o")
-        self.va_write_val_o =    WireVector(bitwidth = 1, name = "va_write_val_o")
-        self.va_write_enable_o = WireVector(bitwidth = 1, name = "va_write_enable_o")
+        self.active_o =          WireVector(bitwidth = 1, name = name_prefix+"active_o")
+        self.status_o =          WireVector(bitwidth = 1, name = name_prefix+"status_o")
+        self.va_addrs_o =        wirevector_list(var_bits, name_prefix+"va_addrs_o", clause_size)
+        self.va_write_addr_o =   WireVector(bitwidth = var_bits, name = name_prefix+"va_write_addr_o")
+        self.va_write_val_o =    WireVector(bitwidth = 1, name = name_prefix+"va_write_val_o")
+        self.va_write_enable_o = WireVector(bitwidth = 1, name = name_prefix+"va_write_enable_o")
 
         ## internal registers ##
         clause_addr = Register(bitwidth = clause_bits, name = "clause_addr") # current clause address
@@ -75,6 +75,8 @@ class BCP:
         connect_wire_lists(clause_resolver.var_assigned_i, self.var_assigned_i)
 
         with pyrtl.conditional_assignment:
+            with ~active:
+                pass
             with clause_resolver.clause_status_o == 0:
                 pass
             with clause_resolver.clause_status_o == 1:
@@ -88,5 +90,5 @@ class BCP:
                 self.va_write_enable_o |= 1
 
         # more forwarding type of thing so that we can don't need to stall status for a cycle
-        self.active_o = active & ~contradiction
-        self.status_o = contradiction
+        self.active_o <<= active & ~contradiction
+        self.status_o <<= contradiction
