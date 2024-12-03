@@ -1,4 +1,5 @@
 import pyrtl
+from helpers import wirevector_list
 
 # exposed wires:
 #  * addr_i: read address input
@@ -24,15 +25,11 @@ class ClauseStorage:
         self.mem_o = pyrtl.WireVector(bitwidth = store_width, name="cs_mem_o")
         self.mem_o <<= self.mem[self.addr_i]
 
-        self.vars_o = []
-        self.negs_o = []
+        self.vars_o = wirevector_list(var_bits, "cs_var_o", clause_size)
+        self.negs_o = wirevector_list(1, "cs_neg_o", clause_size)
         for i in range(clause_size):
-            temp_var = pyrtl.WireVector(bitwidth = var_bits, name=f"cs_var_o_{i}")
-            temp_neg = pyrtl.WireVector(bitwidth = 1, name=f"cs_neg_o_{i}")
             var_start = i * (var_bits + 1)
-            temp_var <<= self.mem_o[var_start:var_start+var_bits]
-            temp_neg <<= self.mem_o[var_start+var_bits:var_start+var_bits+1]
-            self.vars_o.append(temp_var)
-            self.vars_o.append(temp_neg)
+            self.vars_o[i] <<= self.mem_o[var_start:var_start+var_bits]
+            self.negs_o[i] <<= self.mem_o[var_start+var_bits:var_start+var_bits+1]
 
         # TODO: implement write i/o
