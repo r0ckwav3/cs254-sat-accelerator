@@ -4,3 +4,7 @@
 # python virtual environments
 /venv
 /.venv
+
+# misc caches
+/.mypy_cache
+/.ropeproject
