@@ -48,7 +48,7 @@ class BCP:
 
         ## substructures ##
         clause_resolver = ClauseResolver(clause_bits, var_bits, clause_size)
-        clause_storage  = ClauseStorage(clause_bits, var_bits, clause_size)
+        self.clause_storage  = ClauseStorage(clause_bits, var_bits, clause_size)
 
         ## logic ##
         iteration_finished <<= (clause_addr == max_addr)
@@ -67,10 +67,10 @@ class BCP:
 
         clause_resolver.clause_id_i <<= clause_addr
         # we don't use clause_resolver.cs_addr_o or va_addrs_o because we just have that info locally
-        clause_storage.addr_i <<= clause_addr
-        connect_wire_lists(clause_resolver.cs_vars_i, clause_storage.vars_o)
-        connect_wire_lists(clause_resolver.cs_negated_i, clause_storage.negs_o)
-        connect_wire_lists(self.va_addrs_o, clause_storage.vars_o)
+        self.clause_storage.addr_i <<= clause_addr
+        connect_wire_lists(clause_resolver.cs_vars_i, self.clause_storage.vars_o)
+        connect_wire_lists(clause_resolver.cs_negated_i, self.clause_storage.negs_o)
+        connect_wire_lists(self.va_addrs_o, self.clause_storage.vars_o)
         connect_wire_lists(clause_resolver.var_vals_i, self.var_vals_i)
         connect_wire_lists(clause_resolver.var_assigned_i, self.var_assigned_i)
 
