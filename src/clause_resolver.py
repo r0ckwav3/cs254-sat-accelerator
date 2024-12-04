@@ -19,14 +19,14 @@ from helpers import wirevector_list
 
 class ClauseResolver:
     def __init__(self, clause_bits: int, var_bits:int, clause_size: int):
-        # IN
+        ## IN ##
         self.clause_id_i = WireVector(bitwidth = clause_bits, name = "clause_id_i")
         self.cs_vars_i =      wirevector_list(var_bits, "cs_vars_i", clause_size)
         self.cs_negated_i =   wirevector_list(1, "cs_negated_i", clause_size)
         self.var_vals_i =     wirevector_list(1, "var_vals_i", clause_size)
         self.var_assigned_i = wirevector_list(1, "var_assigned_i", clause_size)
 
-        # OUT
+        ## OUT ##
         self.cs_addr_o = WireVector(bitwidth = clause_bits, name = "cs_addr_o")
         self.va_addrs_o = wirevector_list(var_bits, "va_addrs_o", clause_size)
 
@@ -34,7 +34,7 @@ class ClauseResolver:
         self.implied_var_o = WireVector(bitwidth = var_bits, name = "implied_var_o")
         self.implied_val_o = WireVector(bitwidth = 1, name = "implied_val_o")
 
-        # INTERNAL
+        ## INTERNAL ##
         # values of variables + if they're negated
         atom_vals = wirevector_list(1, "atom_vals", clause_size)
         # negation of var_assigned_i
@@ -49,7 +49,7 @@ class ClauseResolver:
         unassigned_var = WireVector(bitwidth = var_bits, name = "unassigned_var")
         unassigned_neg = WireVector(bitwidth = 1, name = "unassigned_neg")
 
-        # LOGIC
+        ## LOGIC ##
 
         # piping memory addresses around
         self.cs_addr_o <<= self.clause_id_i
