@@ -206,11 +206,46 @@ def clause_resolver_implied_test():
     assert sim_trace.trace["implied_var"][-1] == 0x11
     assert sim_trace.trace["implied_val"][-1] == 0
 
+def clause_resolver_small_implied_test():
+    pyrtl.reset_working_block()
+    pyrtl.set_debug_mode(True)
+
+    # setup
+    basic_setup()
+
+    # test
+    sim_trace = pyrtl.SimulationTrace()
+    sim = pyrtl.Simulation(tracer=sim_trace)
+    inputs = copy.deepcopy(DEFAULT_INPUT)
+
+    # var 1 implied true
+    inputs["var_assigned_0"] = 0
+    inputs["var_assigned_1"] = 0
+    inputs["var_assigned_2"] = 0
+    inputs["var_assigned_3"] = 0
+    inputs["var_vals_0"] = 0
+    inputs["var_vals_1"] = 0
+    inputs["var_vals_2"] = 0
+    inputs["var_vals_3"] = 0
+    inputs["cs_negated_0"] = 0
+    inputs["cs_negated_1"] = 1
+    inputs["cs_negated_2"] = 0
+    inputs["cs_negated_3"] = 1
+    inputs["cs_vars_0"] = 1
+    inputs["cs_vars_1"] = 0
+    inputs["cs_vars_2"] = 0
+    inputs["cs_vars_3"] = 0
+    sim.step(inputs)
+    assert sim_trace.trace["clause_status"][-1] == 3
+    assert sim_trace.trace["implied_var"][-1] == 0x01
+    assert sim_trace.trace["implied_val"][-1] == 1
+
 tests = [
     clause_resolver_addr_test,
     clause_resolver_sat_unsat_test,
     clause_resolver_unknown_test,
-    clause_resolver_implied_test
+    clause_resolver_implied_test,
+    clause_resolver_small_implied_test
 ]
 
 if __name__ == "__main__":
