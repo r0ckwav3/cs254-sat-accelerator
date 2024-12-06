@@ -44,6 +44,7 @@ class ClauseResolver:
         # the negation bit if it's unassigned and 0 otherwise
         unassigned_masked_negs = wirevector_list(1, "unassigned_masked_negs", clause_size)
 
+        ored_var_addrs = WireVector(bitwidth = 1, name = "ored_var_addrs")
         is_sat = WireVector(bitwidth = 1, name = "is_sat")
         unassigned_count = WireVector(bitwidth = 2, name = "unassigned_count") # either 0, 1 or 3, see double_saturate
         unassigned_var = WireVector(bitwidth = var_bits, name = "unassigned_var")
@@ -59,10 +60,12 @@ class ClauseResolver:
         # resolve logic
         for i in range(clause_size):
             atom_vals[i] <<= (self.var_vals_i[i] ^ self.cs_negated_i[i]) & self.var_assigned_i[i]
-            unassigned[i] <<= ~self.var_assigned_i[i]
+            # we consider 0 vars to be assigned for the purposes of implication
+            unassigned[i] <<= ~(self.var_assigned_i[i] | (self.cs_vars_i[i] == 0))
             unassigned_masked_vars[i] <<= self.cs_vars_i[i] & unassigned[i].sign_extended(var_bits)
             unassigned_masked_negs[i] <<= self.cs_negated_i[i] & unassigned[i]
 
+        ored_var_addrs <<= helpers.create_bin_tree(self.cs_vars_i, lambda a, b: a|b)
         is_sat <<= helpers.create_bin_tree(atom_vals, lambda a, b: a|b)
         unassigned_count <<= helpers.create_bin_tree(unassigned, helpers.double_saturate)
         # we only care about unassigned_var when there's exactly one unassigned variable, so or works fine to extract it
@@ -70,8 +73,8 @@ class ClauseResolver:
         unassigned_neg <<= helpers.create_bin_tree(unassigned_masked_negs, lambda a, b: a|b)
 
         with pyrtl.conditional_assignment:
-            with is_sat:
-                # sat
+            with is_sat | (ored_var_addrs==0):
+                # sat or nothing is unassigned
                 self.clause_status_o |= 2
             with unassigned_count == 0:
                 # 0 unassigned, therefore unsat
