@@ -176,8 +176,6 @@ def bcp_chain_implication_test():
     input["var_assigned_3"] = 0
     sim.step(input)
 
-    print(sim_trace.trace["clause_status_o"], sim_trace.trace["clause_addr"],sim_trace.trace["va_addrs_0"],sim_trace.trace["va_addrs_1"],sim_trace.trace["va_addrs_2"],sim_trace.trace["va_addrs_3"])
-
     assert sim_trace.trace["va_addrs_0"][-1] == 1
     assert sim_trace.trace["va_addrs_1"][-1] == 0
     assert sim_trace.trace["va_addrs_2"][-1] == 0
