@@ -1,0 +1,11 @@
+c A small satisfiable example
+c
+c assignment is FFT
+c written for Jonathan Balkind's CMPCS 254
+c
+p cnf 3 5
+-1 2 0
+-1 3 0
+-2 -3 0
+-2 3 0
+2 -3 0
