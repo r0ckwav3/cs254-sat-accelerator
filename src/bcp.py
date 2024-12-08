@@ -66,8 +66,6 @@ class BCP:
                 active.next      |= active
                 update_made.next |= update_made | writing
 
-        clause_resolver.clause_id_i <<= clause_addr
-        # we don't use clause_resolver.cs_addr_o or va_addrs_o because we just have that info locally
         self.clause_storage.addr_i <<= clause_addr
         connect_wire_lists(clause_resolver.cs_vars_i, self.clause_storage.vars_o)
         connect_wire_lists(clause_resolver.cs_negated_i, self.clause_storage.negs_o)
