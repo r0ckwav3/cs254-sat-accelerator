@@ -78,8 +78,8 @@ def sat_test():
         #0x05: 0b11111100000000011,
     } # all assigned to 1, no bt needed
 
-    for i in range(64):
-        val = (i << 12) | 0b00000000000000011
+    for i in range(256):
+        val = (i << 11) | 0b00000000000000011
         memory[i] = val
     
     # for i in range(64):
@@ -119,7 +119,7 @@ def needs_backtrack_test():
         0x01: 0b00000100000000011,
         0x02: 0b00001000000000011,
         0x03: 0b00001100000000011,
-        0x04: 0b00010000000001101,
+        0x04: 0b00010000000001110,
     } # all assigned to 1 except for x4, which needs backtracking
 
     # test
@@ -156,7 +156,7 @@ def unsat_test():
         0x01: 0b00000100000000011,
         0x02: 0b00001000000000011,
         0x03: 0b00001100000000011,
-        0x04: 0b00010000000000001,
+        0x04: 0b00010000000000010,
     } # all assigned to 1 except for x4, which needs backtracking
 
     # test
