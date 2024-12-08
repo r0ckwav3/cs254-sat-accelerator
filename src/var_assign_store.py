@@ -44,7 +44,7 @@ class VarAssignStore:
 
         ## internal variable storage ##
         self.mem = pyrtl.MemBlock(
-            bitwidth = 3 + var_bits + var_bits, # 1 for assigned, 1 for val, VAR_BITS + 1 for level, var_bits for address
+            bitwidth = 4 + var_bits + var_bits, # 1 for assigned, 1 for val, VAR_BITS + 1 for level, var_bits for address
             addrwidth = var_bits,
             name = "Variable Memory",
             max_read_ports = 2 ** var_bits + 1,
@@ -52,11 +52,11 @@ class VarAssignStore:
         )
 
         ## internal wires ##
-        self.unassignable_check = WireVector(bitwidth = 3 + var_bits + var_bits, name = name_prefix+"unassignable_check")
-        self.unassigned_check = WireVector(bitwidth = 3 + var_bits + var_bits, name = name_prefix+"unassigned_check")
-        self.new_assign = WireVector(bitwidth = 3 + var_bits + var_bits, name = name_prefix+"new_assign")
+        self.unassignable_check = WireVector(bitwidth = 4 + var_bits + var_bits, name = name_prefix+"unassignable_check")
+        self.unassigned_check = WireVector(bitwidth = 4 + var_bits + var_bits, name = name_prefix+"unassigned_check")
+        self.new_assign = WireVector(bitwidth = 4 + var_bits + var_bits, name = name_prefix+"new_assign")
         
-        self.every_memory_value = wirevector_list(3 + var_bits + var_bits, "every_memory_value", 2 ** var_bits)
+        self.every_memory_value = wirevector_list(4 + var_bits + var_bits, "every_memory_value", 2 ** var_bits)
         for i in range(2 ** var_bits):
             self.every_memory_value[i] <<= self.mem[i]
         self.unassignable_check <<= helpers.create_bin_tree(self.every_memory_value, get_unassignable)
@@ -93,7 +93,9 @@ class VarAssignStore:
                     val_bit = pyrtl.Const(0, bitwidth=1)
                     level_bits = self.level
 
-                    self.new_assign |= pyrtl.concat(index_bits, level_bits, val_bit, assign_bit)
+                    is_root = pyrtl.Const(1, bitwidth=1)
+
+                    self.new_assign |= pyrtl.concat(is_root, index_bits, level_bits, val_bit, assign_bit)
                     self.mem[index_bits] |= self.new_assign
 
                     self.ready_bcp |= 1
