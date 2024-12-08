@@ -5,6 +5,7 @@ from helpers import wirevector_list, connect_wire_lists
 from clause_resolver import ClauseResolver
 from clause_storage import ClauseStorage
 from bcp import BCP
+from var_assign_store import VarAssignStore
 
 
 CLAUSE_BITS = 8 # we have <= 2^CLAUSE_BITS clauses
@@ -21,48 +22,75 @@ done = pyrtl.Output(bitwidth=1, name='done')
 # 10: Backtrack
 # 11: Done
 dpll_state = pyrtl.Register(bitwidth=2, name="dpll_state")
-new_dpll_state = pyrtl.WireVector(bitwidth=2, name="new_pred_state")
+new_dpll_state = pyrtl.WireVector(bitwidth=2, name="new_dpll_state")
+curr_level = pyrtl.Register(bitwidth=VAR_BITS, name="curr_level")
+next_level = pyrtl.WireVector(bitwidth=2, name="next_level")
 
-var_mem = pyrtl.MemBlock(
-    bitwidth = 3 + VAR_BITS, # 1 for assigned, 1 for val, VAR_BITS + 1 for level
-    addrwidth = VAR_BITS,
-    name = "Variable Memory",
-    max_read_ports = 1,
-    max_write_ports = 1
-)
+sat_state = pyrtl.Register(bitwidth=1, name="sat_state")
+next_sat_state = pyrtl.WireVector(bitwidth=1, name="next_sat_state")
+
+var_assign_store = VarAssignStore(8, 8, 4)
 
 # set up BCP to default values
-bcp = BCP(CLAUSE_BITS, VAR_BITS, CLAUSE_SIZE)
+#bcp = BCP(CLAUSE_BITS, VAR_BITS, CLAUSE_SIZE)
 
-bcp.start_i <<= 0
-connect_wire_lists(bcp.var_vals_i, wirevector_list(1, "var_vals", CLAUSE_SIZE))
+#bcp.start_i <<= 0
+#connect_wire_lists(bcp.var_vals_i, wirevector_list(1, "var_vals", CLAUSE_SIZE))
 
 with pyrtl.conditional_assignment:
     with dpll_state == 0:
-        # check if we have any unassigned variables
+        # assign/start
+        var_assign_store.start <<= 1
+        var_assign_store.level <<= 0
 
-        new_dpll_state |= 1
-        sat |= 0
-        done |= 0
+        #see what we get
+        with var_assign_store.sat:
+            new_dpll_state |= 3
+            next_sat_state |= 1
+            sat |= 1
+            done |= 1
+        with var_assign_store.ready_bcp:
+            new_dpll_state |= 0
+            next_sat_state |= 0
+            sat |= 0
+            done |= 0
+            next_level |= curr_level
+        with var_assign_store.needs_backtrack:
+            new_dpll_state |= 2
+            next_sat_state |= 0
+            sat |= 0
+            done |= 0
+            next_level |= curr_level
+        with var_assign_store.unsat:
+            new_dpll_state |= 3
+            next_sat_state |= 0
+            sat |= 0
+            done |= 1 
+
     with dpll_state == 1:
         # BCP
-
-        new_dpll_state |= 2
+        new_dpll_state |= 0
+        next_sat_state |= 0
         sat |= 0
         done |= 0
+        next_level |= curr_level
     with dpll_state == 2:
         # backtrack
-
-        new_dpll_state |= 3
+        new_dpll_state |= 0
+        next_sat_state |= 0
         sat |= 0
         done |= 0
+        next_level |= curr_level
     with dpll_state == 3:
         # done, stay in this state
         new_dpll_state |= 3
-        sat |= 1
+        next_sat_state |= sat_state
+        sat |= sat_state
         done |= 1
 
 dpll_state.next <<= new_dpll_state
+curr_level.next <<= next_level
+sat_state.next <<= next_sat_state
 
 ##################### SIMULATION #####################
 
@@ -74,12 +102,21 @@ if __name__ == '__main__':
         0x04: 0b100000001100000010100000011000000100
     }
 
-    sim_trace = pyrtl.SimulationTrace()
-    sim = pyrtl.Simulation(tracer=sim_trace, memory_value_map={bcp.clause_storage.mem: memory})
+    var_mem = {0x00: 0b00000000000000000}
+    for i in range(256):
+        val = (i << 11)
+        var_mem[i] = val
+    
+    # for i in range(256):
+    #     print("{:019b}".format(var_mem[i]))
 
-    for cycle in range(10):
+    sim_trace = pyrtl.SimulationTrace()
+    sim = pyrtl.Simulation(tracer=sim_trace, memory_value_map={var_assign_store.mem: var_mem})
+    #sim = pyrtl.Simulation(tracer=sim_trace, memory_value_map={bcp.clause_storage.mem: memory})
+
+    for cycle in range(18):
         sim.step({})
 
-    sim_trace.render_trace(symbol_len = 5) 
+    sim_trace.render_trace(symbol_len = 7) 
     
-    print('mem',sim.inspect_mem(bcp.clause_storage.mem))
+    print('mem',sim.inspect_mem(var_assign_store.mem))
