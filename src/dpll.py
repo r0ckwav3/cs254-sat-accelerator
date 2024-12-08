@@ -6,11 +6,7 @@ from clause_resolver import ClauseResolver
 from clause_storage import ClauseStorage
 from bcp import BCP
 from var_assign_store import VarAssignStore
-
-
-CLAUSE_BITS = 8 # we have <= 2^CLAUSE_BITS clauses
-VAR_BITS    = 8 # we have <= 2^VAR_BITS clauses
-CLAUSE_SIZE = 4 # each clause has <= CLAUSE_SIZE vars in it
+from consts import CLAUSE_BITS, VAR_BITS, CLAUSE_SIZE
 
 ##################### DPLL starts here #####################
 sat = pyrtl.Output(bitwidth=1, name='sat')
@@ -65,7 +61,7 @@ with pyrtl.conditional_assignment:
             new_dpll_state |= 3
             next_sat_state |= 0
             sat |= 0
-            done |= 1 
+            done |= 1
 
     with dpll_state == 1:
         # BCP
@@ -106,7 +102,7 @@ if __name__ == '__main__':
     for i in range(256):
         val = (i << 11)
         var_mem[i] = val
-    
+
     # for i in range(256):
     #     print("{:019b}".format(var_mem[i]))
 
@@ -117,6 +113,6 @@ if __name__ == '__main__':
     for cycle in range(18):
         sim.step({})
 
-    sim_trace.render_trace(symbol_len = 7) 
-    
+    sim_trace.render_trace(symbol_len = 7)
+
     print('mem',sim.inspect_mem(var_assign_store.mem))
