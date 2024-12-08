@@ -6,16 +6,6 @@ from clause_resolver import ClauseResolver
 from clause_storage import ClauseStorage
 from bcp import BCP
 
-# exposed wires:
-# Inputs:
-#  - write_val
-#  - write_enable
-#  - write_level
-#  - reset_level
-#  - reset_enable
-# Outputs:
-#  - cs_addr_o:       address sent to clause storage
-
 def get_unassignable(a, b):
     ans = WireVector(bitwidth=max(a.bitwidth, b.bitwidth))
     with pyrtl.conditional_assignment:
