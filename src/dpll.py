@@ -1,12 +1,25 @@
 import pyrtl
 import helpers
 from pyrtl import WireVector, Register
-from helpers import wirevector_list, connect_wire_lists
+from helpers import wirevector_list, connect_wire_lists, map_wires
 from clause_resolver import ClauseResolver
 from clause_storage import ClauseStorage
 from bcp import BCP
 from var_assign_store import VarAssignStore
+import io
 
+##################### Random stuff #####################
+def get_val_bit(a):
+    ans = WireVector(bitwidth=1)
+    ans <<= a[1]
+    return ans
+
+def get_assigned_bit(a):
+    ans = WireVector(bitwidth=1)
+    ans <<= a[0]
+    return ans
+
+##################### Constants #####################
 
 CLAUSE_BITS = 8 # we have <= 2^CLAUSE_BITS clauses
 VAR_BITS    = 8 # we have <= 2^VAR_BITS clauses
@@ -29,13 +42,19 @@ next_level = pyrtl.WireVector(bitwidth=2, name="next_level")
 sat_state = pyrtl.Register(bitwidth=1, name="sat_state")
 next_sat_state = pyrtl.WireVector(bitwidth=1, name="next_sat_state")
 
-var_assign_store = VarAssignStore(8, 8, 4)
+var_assign_store = VarAssignStore(CLAUSE_BITS, VAR_BITS, CLAUSE_SIZE)
+
+# hi jon i didn't want to write this
+every_assigned_bit = map_wires(var_assign_store.every_memory_value, get_assigned_bit)
+every_assigned_bit_with_names = wirevector_list(1, "every_assigned_bit_with_names", 2 ** VAR_BITS)
+connect_wire_lists(every_assigned_bit_with_names, every_assigned_bit)
+
+every_val_bit = map_wires(var_assign_store.every_memory_value, get_val_bit)
+every_val_bit_with_names = wirevector_list(1, "every_val_bit_with_names", 2 ** VAR_BITS)
+connect_wire_lists(every_val_bit_with_names, every_val_bit)
 
 # set up BCP to default values
 #bcp = BCP(CLAUSE_BITS, VAR_BITS, CLAUSE_SIZE)
-
-#bcp.start_i <<= 0
-#connect_wire_lists(bcp.var_vals_i, wirevector_list(1, "var_vals", CLAUSE_SIZE))
 
 with pyrtl.conditional_assignment:
     with dpll_state == 0:
@@ -69,6 +88,10 @@ with pyrtl.conditional_assignment:
 
     with dpll_state == 1:
         # BCP
+        #bcp.start |= 1
+        #bcp.var_vals_i |= curr_level
+
+
         new_dpll_state |= 0
         next_sat_state |= 0
         sat |= 0
@@ -120,3 +143,11 @@ if __name__ == '__main__':
     sim_trace.render_trace(symbol_len = 7) 
     
     print('mem',sim.inspect_mem(var_assign_store.mem))
+
+    # with io.StringIO() as vfile:
+    #     pyrtl.output_to_graphviz(vfile)
+    #     f = open("dpll_graph.gv", "a")
+    #     f.write(vfile.getvalue())
+    #     f.close()
+
+    

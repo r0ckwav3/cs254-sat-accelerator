@@ -47,7 +47,7 @@ class VarAssignStore:
             bitwidth = 4 + var_bits + var_bits, # 1 for assigned, 1 for val, VAR_BITS + 1 for level, var_bits for address
             addrwidth = var_bits,
             name = "Variable Memory",
-            max_read_ports = 2 ** var_bits + 1,
+            max_read_ports = 2 ** var_bits + 1, # oops you didn't see that!
             max_write_ports = 2
         )
 
