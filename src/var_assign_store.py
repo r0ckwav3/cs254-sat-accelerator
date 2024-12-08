@@ -24,7 +24,7 @@ def get_unassignable(a, b):
         with b[0:2]==0b01:
             ans |= b
         with pyrtl.otherwise:
-            ans |= 0
+            ans |= b
     return ans
 
 def get_unassigned(a, b):
@@ -43,7 +43,7 @@ class VarAssignStore:
         
         ## inputs ##
         self.start = WireVector(bitwidth = 1, name = name_prefix+"start")
-        self.level = WireVector(bitwidth = 1, name = name_prefix+"level")
+        self.level = WireVector(bitwidth = var_bits+1, name = name_prefix+"level")
 
         ## outputs ##
         #self.active = WireVector(bitwidth = 1, name = name_prefix+"active")
@@ -62,11 +62,9 @@ class VarAssignStore:
         )
 
         ## internal wires ##
-        #self.unassignable = WireVector(bitwidth = 3 + var_bits, name = name_prefix+"unassignable")
-        #self.unassigned = WireVector(bitwidth = 3 + var_bits, name = name_prefix+"unassigned")
         self.unassignable_check = WireVector(bitwidth = 3 + var_bits + var_bits, name = name_prefix+"unassignable_check")
         self.unassigned_check = WireVector(bitwidth = 3 + var_bits + var_bits, name = name_prefix+"unassigned_check")
-        #self.a_state = WireVector(bitwidth = 2, name = name_prefix+"a_state")
+        self.new_assign = WireVector(bitwidth = 3 + var_bits + var_bits, name = name_prefix+"new_assign")
         
         self.every_memory_value = wirevector_list(3 + var_bits + var_bits, "every_memory_value", var_bits * var_bits)
         for i in range(var_bits * var_bits):
@@ -98,15 +96,23 @@ class VarAssignStore:
                     self.unsat |= 0
                     self.sat |= 1
 
-
                 # otherwise choose any unassigned variable to assign
                 with pyrtl.otherwise:
-                    self.ready_bcp |= 0
+                    index_bits = self.unassigned_check[11:19]
+                    assign_bit = pyrtl.Const(1, bitwidth=1)
+                    val_bit = pyrtl.Const(0, bitwidth=1)
+                    level_bits = self.level
+
+                    self.new_assign |= pyrtl.concat(index_bits, level_bits, val_bit, assign_bit)
+                    self.mem[index_bits] |= self.new_assign
+
+                    self.ready_bcp |= 1
                     self.needs_backtrack |= 0
-                    self.unsat |= self.needs_backtrack & (self.level == 0)
+                    self.unsat |= 0
                     self.sat |= 0
 
             with pyrtl.otherwise:
+                # inactive
                 self.ready_bcp |= 0
                 self.needs_backtrack |= 0
                 self.unsat |= 0

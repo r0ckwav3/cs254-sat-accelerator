@@ -180,13 +180,55 @@ def unsat_test():
     
     #sim_trace.render_trace(symbol_len=100)
 
+def assign_test():
+    pyrtl.reset_working_block()
+    pyrtl.set_debug_mode(True)
+
+    # setup
+    vas = basic_setup()
+
+     # bits: 0 assigned, 1 val, 2 - 10 level, 11 - 18 address
+    memory = {
+        0x00: 0b00000000000000011,
+        0x01: 0b00000100000000011,
+        0x02: 0b00001000000000011,
+        0x03: 0b00001100000000011,
+        0x04: 0b00010000000000000,
+    } # all assigned to 1 except for x4, which needs backtracking
+
+    # test
+    sim_trace = pyrtl.SimulationTrace()
+    sim = pyrtl.Simulation(tracer=sim_trace, memory_value_map={
+        vas.mem : memory
+    })
+
+    inputs = {
+        "start": 1,
+        "level": 1 #BUG: can't make this greater than 1 for some reason????
+    }
+    sim.step(inputs)
+
+    
+    assert sim_trace.trace["assign_needs_backtrack"][-1] == 0
+    assert sim_trace.trace["assign_ready_bcp"][-1] == 1
+    assert sim_trace.trace["assign_sat"][-1] == 0
+    assert sim_trace.trace["assign_unsat"][-1] == 0
+    assert sim_trace.trace["assign_level"][-1] == 1
+
+    #print((sim_trace.trace["assign_new_assign"][0]))
+    assert sim_trace.trace["assign_new_assign"][-1] == 0b00010000000000101
+
+    #print(sim.inspect_mem(vas.mem))
+    assert sim.inspect_mem(vas.mem)[0x04] == 0b00010000000000101
+    
+    #sim_trace.render_trace(symbol_len=100)
 
 tests = [
     needs_backtrack_test,
     inactive_test,
     sat_test,
     unsat_test,
-    #next_unassigned_test,
+    assign_test,
 ]
 
 if __name__ == "__main__":
