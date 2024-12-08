@@ -1,6 +1,7 @@
 import pyrtl
 from pyrtl import WireVector, Register
 from helpers import wirevector_list, connect_wire_lists
+
 from clause_resolver import ClauseResolver
 from clause_storage import ClauseStorage
 

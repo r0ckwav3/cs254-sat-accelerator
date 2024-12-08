@@ -62,3 +62,23 @@ def create_bin_tree(inputs: Sequence[WireVector], op: Callable[[WireVector, Wire
         curr_wires = new_wires
 
     return curr_wires[0]
+
+def create_bin_tree_modified(inputs: Sequence[WireVector], op: Callable[[WireVector, WireVector, str], WireVector]):
+    curr_wires = inputs
+
+    counter = 0
+
+    while len(curr_wires) > 1:
+        counter += 1
+        new_wires = []
+        for i in range(1,len(curr_wires),2):
+            counter += 1
+            new_wires.append(op(curr_wires[i-1], curr_wires[i], f"{counter}"))
+
+        if len(curr_wires)%2 == 1:
+            # if it's odd we need to carry something over
+            new_wires.append(curr_wires[-1])
+
+        curr_wires = new_wires
+
+    return curr_wires[0]
