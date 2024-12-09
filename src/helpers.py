@@ -47,13 +47,13 @@ def double_saturate(in1: WireVector, in2: WireVector) -> WireVector:
 # Assumption:
 #  - all wires in the input are of length k
 #  - op(a,b)->c takes two wires of width k and returns a wire of width k
-def create_bin_tree(inputs: Sequence[WireVector], op: Callable[[WireVector, WireVector], WireVector]):
+def create_bin_tree(inputs: Sequence[WireVector], op: Callable, *args):
     curr_wires = inputs
 
     while len(curr_wires) > 1:
         new_wires = []
         for i in range(1,len(curr_wires),2):
-            new_wires.append(op(curr_wires[i-1], curr_wires[i]))
+            new_wires.append(op(curr_wires[i-1], curr_wires[i], *args))
 
         if len(curr_wires)%2 == 1:
             # if it's odd we need to carry something over
