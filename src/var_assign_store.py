@@ -5,6 +5,7 @@ from helpers import wirevector_list, connect_wire_lists
 from clause_resolver import ClauseResolver
 from clause_storage import ClauseStorage
 from bcp import BCP
+from consts import CLAUSE_BITS, VAR_BITS, CLAUSE_SIZE
 
 def get_unassignable(a, b):
     ans = WireVector(bitwidth=max(a.bitwidth, b.bitwidth))
@@ -20,7 +21,7 @@ def get_unassignable(a, b):
 def get_unassigned(a, b):
     ans = WireVector(bitwidth=max(a.bitwidth, b.bitwidth))
     with pyrtl.conditional_assignment:
-        with a[11:19] == 0:
+        with a[3+VAR_BITS:3+VAR_BITS*2] == 0:
             ans |= b
         with a[0:2]==0b00:
             ans |= a
@@ -33,14 +34,15 @@ def get_unassigned(a, b):
 def get_a_current_level(a, b, level):
     ans = WireVector(bitwidth=max(a.bitwidth, b.bitwidth))
     with pyrtl.conditional_assignment:
-        with (b[2:11]==level) & b[0]:
+        with (b[2:3+VAR_BITS]==level) & b[0]:
             ans |= b
-        with (a[2:11]==level) & a[0]:
+        with (a[2:3+VAR_BITS]==level) & a[0]:
             ans |=a
         with pyrtl.otherwise:
             ans |= a
     return ans
 
+# although we pass these in as arguments, they don't quite work since the helper functions end up needing to use the constants file anyways
 class VarAssignStore:
     def __init__(self, clause_bits: int, var_bits:int, clause_size: int, name_prefix = "assign_"):
 
@@ -77,7 +79,7 @@ class VarAssignStore:
         self.every_memory_value = wirevector_list(4 + var_bits + var_bits, "every_memory_value", 2 ** var_bits)
         for i in range(2 ** var_bits):
             self.every_memory_value[i] <<= self.mem[i]
-            
+
         self.unassignable_check <<= helpers.create_bin_tree(self.every_memory_value, get_unassignable)
         self.unassigned_check <<= helpers.create_bin_tree(self.every_memory_value, get_unassigned)
         self.currlevel_check <<= helpers.create_bin_tree(self.every_memory_value, get_a_current_level, self.level)
@@ -90,12 +92,12 @@ class VarAssignStore:
                 # first check if any variables are unassignable
                 # if so, we need to backtrack, or if we're at level 0, we're unsat
                 with (self.unassignable_check[0]==0)& (self.unassignable_check[1]==1):
-                    with self.unassignable_check[2:11]==0b00:
+                    with self.unassignable_check[2:3+VAR_BITS]==0b00:
                         self.ready_bcp |= 0
                         self.needs_backtrack |= 0
                         self.unsat |= 1
                         self.sat |= 0
-                    with self.unassignable_check[2:11]!=0b00:
+                    with self.unassignable_check[2:3+VAR_BITS]!=0b00:
                         self.ready_bcp |= 0
                         self.needs_backtrack |= 1
                         self.unsat |= 0
@@ -125,7 +127,7 @@ class VarAssignStore:
                 self.unsat |= 0
                 self.sat |= 0
 
-        index_bits = self.unassigned_check[11:19]
+        index_bits = self.unassigned_check[3+VAR_BITS:3+VAR_BITS*2]
         assign_bit = pyrtl.Const(1, bitwidth=1)
         val_bit = pyrtl.Const(0, bitwidth=1)
         level_bits = self.level

@@ -184,8 +184,8 @@ if __name__ == '__main__':
     }
 
     var_mem = {0x00: 0b00000000000000000}
-    for i in range(256):
-        val = (i << 11)
+    for i in range(1<<VAR_BITS):
+        val = (i << (3+VAR_BITS))
         var_mem[i] = val
 
     # for i in range(256):
