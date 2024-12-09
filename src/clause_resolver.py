@@ -37,7 +37,7 @@ class ClauseResolver:
         # the negation bit if it's unassigned and 0 otherwise
         unassigned_masked_negs = wirevector_list(1, "unassigned_masked_negs", clause_size)
 
-        ored_var_addrs = WireVector(bitwidth = 1, name = "ored_var_addrs")
+        ored_var_addrs = WireVector(bitwidth = var_bits, name = "ored_var_addrs")
         is_sat = WireVector(bitwidth = 1, name = "is_sat")
         unassigned_count = WireVector(bitwidth = 2, name = "unassigned_count") # either 0, 1 or 3, see double_saturate
         unassigned_var = WireVector(bitwidth = var_bits, name = "unassigned_var")

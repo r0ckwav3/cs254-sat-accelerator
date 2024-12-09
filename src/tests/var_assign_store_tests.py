@@ -12,7 +12,7 @@ from var_assign_store import VarAssignStore
 def basic_setup():
     vas = VarAssignStore(8, 8, 4)
     vas.start <<= Input(bitwidth = 1, name = "start")
-    vas.level <<= Input(bitwidth = 1, name = "level")
+    vas.level <<= Input(bitwidth = 8, name = "level")
 
     #active = Output(bitwidth = 1, name = "test_active")
     needs_backtrack = Output(bitwidth = 1, name = "needs_backtrack")
@@ -67,11 +67,11 @@ def sat_test():
 
     # bits: 0 assigned, 1 val, 2 - 10 level, 11 - 19 address
     memory = {
-        0x00: 0b00000000000000011,
-        0x01: 0b00000100000000011,
-        0x02: 0b00001000000000011,
-        0x03: 0b00001100000000011,
-        0x04: 0b00010000000000011,
+        0x00: 0b000000000000000011,
+        0x01: 0b000000100000000011,
+        0x02: 0b000001000000000011,
+        0x03: 0b000001100000000011,
+        0x04: 0b000010000000000011,
         #0x05: 0b11111100000000011,
     } # all assigned to 1, no bt needed
 
@@ -112,11 +112,11 @@ def needs_backtrack_test():
 
      # bits: 0 assigned, 1 val, 2 - 10 level, 11 - 19 address
     memory = {
-        0x00: 0b00000000000000011,
-        0x01: 0b00000100000000011,
-        0x02: 0b00001000000000011,
-        0x03: 0b00001100000000011,
-        0x04: 0b00010000000001110,
+        0x00: 0b000000000000000011,
+        0x01: 0b000000100000000011,
+        0x02: 0b000001000000000011,
+        0x03: 0b000001100000000011,
+        0x04: 0b000010000000001110,
     } # all assigned to 1 except for x4, which needs backtracking
 
     # test
@@ -149,11 +149,11 @@ def unsat_test():
 
      # bits: 0 assigned, 1 val, 2 - 10 level, 11 - 19 address
     memory = {
-        0x00: 0b00000000000000011,
-        0x01: 0b00000100000000011,
-        0x02: 0b00001000000000011,
-        0x03: 0b00001100000000011,
-        0x04: 0b00010000000000010,
+        0x00: 0b000000000000000011,
+        0x01: 0b000000100000000011,
+        0x02: 0b000001000000000011,
+        0x03: 0b000001100000000011,
+        0x04: 0b000010000000000010,
     } # all assigned to 1 except for x4, which needs backtracking
 
     # test
@@ -186,11 +186,11 @@ def assign_test():
 
      # bits: 0 assigned, 1 val, 2 - 10 level, 11 - 18 address
     memory = {
-        0x00: 0b00000000000000011,
-        0x01: 0b00000100000000011,
-        0x02: 0b00001000000000011,
-        0x03: 0b00001100000000011,
-        0x04: 0b00010000000000000,
+        0x00: 0b00000000000000000011,
+        0x01: 0b00000000100000000011,
+        0x02: 0b00000001000000000011,
+        0x03: 0b00000001100000000011,
+        0x04: 0b00000010000000000000,
     } # all assigned to 1 except for x4, which needs backtracking
 
     # test
@@ -201,7 +201,7 @@ def assign_test():
 
     inputs = {
         "start": 1,
-        "level": 1 #BUG: can't make this greater than 1 for some reason????
+        "level": 1
     }
     sim.step(inputs)
 
@@ -213,10 +213,10 @@ def assign_test():
     assert sim_trace.trace["assign_level"][-1] == 1
 
     #print((sim_trace.trace["assign_new_assign"][0]))
-    assert sim_trace.trace["assign_new_assign"][-1] == 0b00010000000000101
+    assert sim_trace.trace["assign_new_assign"][-1] == 0b10000010000000000101
 
     #print(sim.inspect_mem(vas.mem))
-    assert sim.inspect_mem(vas.mem)[0x04] == 0b00010000000000101
+    assert sim.inspect_mem(vas.mem)[0x04] == 0b10000010000000000101
 
     #sim_trace.render_trace(symbol_len=100)
 
