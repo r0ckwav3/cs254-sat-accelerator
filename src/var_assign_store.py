@@ -30,7 +30,7 @@ def get_unassigned(a, b):
 
 class VarAssignStore:
     def __init__(self, clause_bits: int, var_bits:int, clause_size: int, name_prefix = "assign_"):
-        
+
         ## inputs ##
         self.start = WireVector(bitwidth = 1, name = name_prefix+"start")
         self.level = WireVector(bitwidth = var_bits+1, name = name_prefix+"level")
@@ -47,15 +47,16 @@ class VarAssignStore:
             bitwidth = 4 + var_bits + var_bits, # 1 for assigned, 1 for val, VAR_BITS + 1 for level, var_bits for address
             addrwidth = var_bits,
             name = "Variable Memory",
-            max_read_ports = 2 ** var_bits + 1, # oops you didn't see that!
-            max_write_ports = 2
+            max_read_ports = 2 ** var_bits + 1 + clause_size, # oops you didn't see that!
+            max_write_ports = 3,
+            asynchronous=True
         )
 
         ## internal wires ##
         self.unassignable_check = WireVector(bitwidth = 4 + var_bits + var_bits, name = name_prefix+"unassignable_check")
         self.unassigned_check = WireVector(bitwidth = 4 + var_bits + var_bits, name = name_prefix+"unassigned_check")
         self.new_assign = WireVector(bitwidth = 4 + var_bits + var_bits, name = name_prefix+"new_assign")
-        
+
         self.every_memory_value = wirevector_list(4 + var_bits + var_bits, "every_memory_value", 2 ** var_bits)
         for i in range(2 ** var_bits):
             self.every_memory_value[i] <<= self.mem[i]
