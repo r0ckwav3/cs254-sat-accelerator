@@ -12,7 +12,7 @@ from var_assign_store import VarAssignStore
 def basic_setup():
     vas = VarAssignStore(8, 8, 4)
     vas.start <<= Input(bitwidth = 1, name = "start")
-    vas.level <<= Input(bitwidth = 1, name = "level")
+    vas.level <<= Input(bitwidth = 8, name = "level")
 
     #active = Output(bitwidth = 1, name = "test_active")
     needs_backtrack = Output(bitwidth = 1, name = "needs_backtrack")
@@ -201,7 +201,7 @@ def assign_test():
 
     inputs = {
         "start": 1,
-        "level": 1 #BUG: can't make this greater than 1 for some reason????
+        "level": 1
     }
     sim.step(inputs)
 

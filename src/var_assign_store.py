@@ -77,6 +77,7 @@ class VarAssignStore:
         self.every_memory_value = wirevector_list(4 + var_bits + var_bits, "every_memory_value", 2 ** var_bits)
         for i in range(2 ** var_bits):
             self.every_memory_value[i] <<= self.mem[i]
+            
         self.unassignable_check <<= helpers.create_bin_tree(self.every_memory_value, get_unassignable)
         self.unassigned_check <<= helpers.create_bin_tree(self.every_memory_value, get_unassigned)
         self.currlevel_check <<= helpers.create_bin_tree(self.every_memory_value, get_a_current_level, self.level)
