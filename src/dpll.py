@@ -42,6 +42,8 @@ next_level = pyrtl.WireVector(bitwidth=VAR_BITS+1, name="next_level")
 
 sat_state = pyrtl.Register(bitwidth=1, name="sat_state")
 next_sat_state = pyrtl.WireVector(bitwidth=1, name="next_sat_state")
+
+backtrack_write_val = pyrtl.WireVector(bitwidth = 4 + 2*VAR_BITS, name="backtrack_write_val")
 backtrack_write_enable = pyrtl.WireVector(bitwidth=1, name="backtrack_write_enable")
 
 var_assign_store = VarAssignStore(CLAUSE_BITS, VAR_BITS, CLAUSE_SIZE)
@@ -135,8 +137,22 @@ with pyrtl.conditional_assignment:
         # backtrack
         with var_assign_store.has_current_level:
             backtrack_write_enable |= 1
-            new_dpll_state |= 2
             next_level |= curr_level
+            with ~var_assign_store.currlevel_check[3+VAR_BITS * 2]:
+                # it's not the root
+                backtrack_write_val |= pyrtl.concat(var_assign_store.current_level_addr, pyrtl.Const(0, bitwidth=3+VAR_BITS))
+                new_dpll_state |= 2
+            with pyrtl.otherwise:
+                # it's the root
+                with ~var_assign_store.currlevel_check[1]:
+                    # it was a 0, set it to 1 and bcp again
+                    backtrack_write_val |= pyrtl.concat(pyrtl.Const(1, bitwidth=1), var_assign_store.current_level_addr, curr_level, pyrtl.Const(0b11, bitwidth=2))
+                    new_dpll_state |= 1
+                with pyrtl.otherwise:
+                    # it was a 1, set it to bad state and go to assign
+                    backtrack_write_val |= pyrtl.concat(pyrtl.Const(1, bitwidth=1), var_assign_store.current_level_addr, curr_level, pyrtl.Const(0b10, bitwidth=2))
+                    new_dpll_state |= 0
+
         with pyrtl.otherwise:
             new_dpll_state |= 0
             next_level |= curr_level - 1
@@ -151,7 +167,7 @@ with pyrtl.conditional_assignment:
         done |= 1
 
 var_assign_store.mem[var_assign_store.current_level_addr] <<= pyrtl.MemBlock.EnabledWrite(
-    pyrtl.concat(),
+    backtrack_write_val,
     backtrack_write_enable
 )
 

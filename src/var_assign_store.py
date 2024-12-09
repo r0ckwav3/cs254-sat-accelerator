@@ -20,6 +20,8 @@ def get_unassignable(a, b):
 def get_unassigned(a, b):
     ans = WireVector(bitwidth=max(a.bitwidth, b.bitwidth))
     with pyrtl.conditional_assignment:
+        with a[11:19] == 0:
+            ans |= b
         with a[0:2]==0b00:
             ans |= a
         with b[0:2]==0b00:
@@ -31,10 +33,10 @@ def get_unassigned(a, b):
 def get_a_current_level(a, b, level):
     ans = WireVector(bitwidth=max(a.bitwidth, b.bitwidth))
     with pyrtl.conditional_assignment:
-        with a[0:2]==0b00:
-            ans |= a
-        with b[0:2]==0b00:
+        with (b[2:11]==level) & b[0]:
             ans |= b
+        with (a[2:11]==level) & a[0]:
+            ans |=a
         with pyrtl.otherwise:
             ans |= a
     return ans
