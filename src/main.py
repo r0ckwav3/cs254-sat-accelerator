@@ -60,13 +60,13 @@ is_sat = sim_trace.trace["sat"][-1] == 1
 print(f"file: {instance_path}")
 print(f"finished:{finished} sat:{is_sat} cycles:{counter}")
 
-"""
+#"""
 sim_trace.render_trace(
     trace_list = ["done", "sat", "curr_level", "dpll_state", "clause_addr", "clause_status_o", "is_sat", "contradiction", "update_made", "unassigned_count", "bcp_va_write_addr_o", "bcp_va_write_enable_o", "bcp_status_o",
-        "cs_negated_i_0", "cs_negated_i_1", "cs_negated_i_2", "cs_negated_i_3",
+        # "cs_negated_i_0", "cs_negated_i_1", "cs_negated_i_2", "cs_negated_i_3",
         "cs_vars_i_0", "cs_vars_i_1", "cs_vars_i_2", "cs_vars_i_3",
-        "unassigned_0", "unassigned_1", "unassigned_2", "unassigned_3",
+        # "unassigned_0", "unassigned_1", "unassigned_2", "unassigned_3",
         "every_memory_value_1","every_memory_value_2","every_memory_value_3","every_memory_value_4","every_memory_value_5","every_memory_value_6","every_memory_value_7"],
     symbol_len=6
 )
-"""
+#"""
