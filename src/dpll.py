@@ -207,3 +207,8 @@ if __name__ == '__main__':
     #     f = open("dpll_graph.gv", "a")
     #     f.write(vfile.getvalue())
     #     f.close()
+
+    print("optimizing and running timing analysis")
+    pyrtl.optimize()
+    analyser = pyrtl.analysis.TimingAnalysis()
+    print("max freq MHz:", analyser.max_freq())
