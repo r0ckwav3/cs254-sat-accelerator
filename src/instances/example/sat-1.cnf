@@ -1,7 +1,7 @@
 c A small satisfiable example
 c
 c assignment is FFT
-c written for Jonathan Balkind's CMPCS 254
+c written for Jonathan Balkind's CMPSC 254
 c
 p cnf 3 5
 -1 2 0

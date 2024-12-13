@@ -1,6 +1,6 @@
 c A small unsatisfiable example
 c
-c written for Jonathan Balkind's CMPCS 254
+c written for Jonathan Balkind's CMPSC 254
 c
 p cnf 5 6
 1 0
